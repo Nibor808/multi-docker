@@ -1,0 +1,23 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t robinerickson/multi-container -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true robinerickson/multi-container npm test
+
+after_success:
+  - docker build -t robinerickson/multi-client ./client
+  - docker build -t robinerickson/multi-nginx ./nginx
+  - docker build -t robinerickson/multi-server ./server
+  - docker build -t robinerickson/multi-woker ./worker
+  # login to Docker cli, get pass form env variable and add to stdin channel
+  - echo "$DOCKER_PASSWORD" | docker login -u "DOCKER_ID" --password-stdin
+  # take images and push to github
+  - docker push robinerickson/multi-client
+  - docker push robinerickson/multi-nginx
+  - docker push robinerickson/multi-server
+  - docker push robinerickson/multi-worker
