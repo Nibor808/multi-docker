@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  postgres:
+    image: "postgres:latest"
+    environment:
+      - POSTGRES_PASSWORD=postgres_password # default password
+
+  redis:
+    image: "redis:latest"
+
+  api:
+    depends_on:
+      - postgres
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - /app/node_modules # ensure container node_modules is not overwritten by server/node_modules
+      - ./server:/app # share everything form inside server with /app
+    environment:
+      - REDIS_HOST=redis # reference the service name above
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+
+  client:
+    stdin_open: true # to fix bug in create-react-app
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+    - /app/node_modules
+    - ./client:/app
+
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+    - /app/node_modules
+    - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+    - "3000:80"
