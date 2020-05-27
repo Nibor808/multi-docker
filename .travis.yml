@@ -13,7 +13,7 @@ after_success:
   - docker build -t robinerickson/multi-client ./client
   - docker build -t robinerickson/multi-nginx ./nginx
   - docker build -t robinerickson/multi-server ./server
-  - docker build -t robinerickson/multi-woker ./worker
+  - docker build -t robinerickson/multi-worker ./worker
   # login to Docker cli, get user and pass form env variable and add pass to stdin channel
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # take images and push to github
