@@ -14,10 +14,23 @@ after_success:
   - docker build -t robinerickson/multi-nginx ./nginx
   - docker build -t robinerickson/multi-server ./server
   - docker build -t robinerickson/multi-woker ./worker
-  # login to Docker cli, get pass form env variable and add to stdin channel
+  # login to Docker cli, get user and pass form env variable and add pass to stdin channel
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # take images and push to github
   - docker push robinerickson/multi-client
   - docker push robinerickson/multi-nginx
   - docker push robinerickson/multi-server
   - docker push robinerickson/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: ca-central-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket: elasticbeanstalk-ca-central-1-585550510790 # S3 bucket, Travis bundles the app here
+  bucket_path: multi-docker # use app name as default
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: $AWS_SECRET_KEY
